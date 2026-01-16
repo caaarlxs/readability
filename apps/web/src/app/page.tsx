@@ -1,0 +1,74 @@
+"use client";
+
+import RsvpReader from "@/components/RsvpReader";
+import UrlInput from "@/components/UrlInput";
+import { useState } from "react";
+
+interface ExtractionResult {
+  url: string;
+  title?: string;
+  text?: string;
+  error?: string;
+}
+
+export default function Home() {
+  const [step, setStep] = useState<"input" | "reading">("input");
+  const [data, setData] = useState<ExtractionResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleExtract = async (url: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("http://localhost:8000/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Extraction failed: ${res.statusText}`);
+      }
+
+      const result = await res.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      if (!result.text || result.text.length < 50) {
+        throw new Error("Not enough text found to read.");
+      }
+
+      setData(result);
+      setStep("reading");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      {step === "input" && (
+        <UrlInput onSubmit={handleExtract} isLoading={loading} error={error} />
+      )}
+
+      {step === "reading" && data && data.text && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              {data.title || "Untitled Article"}
+            </h2>
+            <div className="text-sm text-gray-500 truncate max-w-md mx-auto">
+              {data.url}
+            </div>
+          </div>
+
+          <RsvpReader text={data.text} onBack={() => setStep("input")} />
+        </div>
+      )}
+    </div>
+  );
+}
