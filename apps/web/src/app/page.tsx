@@ -21,7 +21,8 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/extract", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/extract`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -49,22 +50,39 @@ export default function Home() {
     }
   };
 
+  const handleTextSubmit = (text: string) => {
+    // Direct text input - no API call needed
+    setData({
+      url: "",
+      title: "Custom Text",
+      text: text,
+    });
+    setStep("reading");
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       {step === "input" && (
-        <UrlInput onSubmit={handleExtract} isLoading={loading} error={error} />
+        <UrlInput
+          onSubmit={handleExtract}
+          onTextSubmit={handleTextSubmit}
+          isLoading={loading}
+          error={error}
+        />
       )}
 
       {step === "reading" && data && data.text && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              {data.title || "Untitled Article"}
-            </h2>
-            <div className="text-sm text-gray-500 truncate max-w-md mx-auto">
-              {data.url}
+          {data.url && (
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                {data.title || "Untitled Article"}
+              </h2>
+              <div className="text-sm text-gray-500 truncate max-w-md mx-auto">
+                {data.url}
+              </div>
             </div>
-          </div>
+          )}
 
           <RsvpReader text={data.text} onBack={() => setStep("input")} />
         </div>

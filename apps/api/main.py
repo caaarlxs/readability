@@ -2,12 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .models import ExtractRequest, ExtractResponse
 from .extractor import extract_content
+import os
 
 app = FastAPI(title="RSVP Readability API")
 
-origins = [
-    "http://localhost:3000",
-]
+# Allow environment-based CORS configuration
+# In production, set ALLOWED_ORIGINS to your Vercel domain
+# Example: ALLOWED_ORIGINS=https://your-app.vercel.app,https://www.your-app.com
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+origins = [origin.strip() for origin in allowed_origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
