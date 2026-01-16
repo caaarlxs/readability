@@ -4,11 +4,7 @@ from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 import asyncio
 
-try:
-    from .models import ExtractResponse
-except ImportError:
-    # Fallback for running script directly
-    from models import ExtractResponse
+from models import ExtractResponse
 
 
 # Configuration (could be moved to env vars)

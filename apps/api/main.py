@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .models import ExtractRequest, ExtractResponse
-from .extractor import extract_content
+from models import ExtractRequest, ExtractResponse
+from extractor import extract_content
 import os
 
 app = FastAPI(title="RSVP Readability API")
